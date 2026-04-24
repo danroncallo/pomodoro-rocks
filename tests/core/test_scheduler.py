@@ -1,4 +1,4 @@
-from datetime import datetime
+from datetime import datetime, time
 from core.scheduler import Scheduler
 
 
@@ -36,3 +36,13 @@ def test_boundary_conditions():
     assert scheduler.is_in_hard_block(datetime(2024, 1, 1, 11, 30)) is True
     # Exactly at end of block (exclusive)
     assert scheduler.is_in_hard_block(datetime(2024, 1, 1, 11, 45)) is False
+
+
+def test_custom_hard_blocks():
+    custom_blocks = [(time(9, 0), time(10, 0))]
+    scheduler = Scheduler(hard_blocks=custom_blocks)
+
+    # 9:30 AM is inside custom block
+    assert scheduler.is_in_hard_block(datetime(2024, 1, 1, 9, 30)) is True
+    # 11:35 AM is NOT inside custom block (even if it was in default)
+    assert scheduler.is_in_hard_block(datetime(2024, 1, 1, 11, 35)) is False
