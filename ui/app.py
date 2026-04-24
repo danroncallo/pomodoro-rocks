@@ -1,13 +1,22 @@
 import customtkinter as ctk
+from core.timer import TimerState
 
 class PomodoroApp(ctk.CTk):
-    def __init__(self):
+    def __init__(self, timer):
         super().__init__()
+        self.timer = timer
         
         # Basic configuration
         self.title("Pomodoro Rocks")
         self.overrideredirect(True)  # Borderless
         self.attributes("-topmost", True)
+        
+        # Widgets
+        self.timer_label = ctk.CTkLabel(self, text="00:00", font=("Arial", 24))
+        self.timer_label.pack(pady=10)
+        
+        self.activity_label = ctk.CTkLabel(self, text="", font=("Arial", 16))
+        self.done_button = ctk.CTkButton(self, text="Hecho", command=self._on_done_clicked)
         
         # Initial mode
         self.set_widget_mode()
@@ -15,6 +24,33 @@ class PomodoroApp(ctk.CTk):
         # Dragging support
         self.bind("<Button-1>", self._start_drag)
         self.bind("<B1-Motion>", self._do_drag)
+        
+        # Start update loop
+        self.update_loop()
+
+    def _on_done_clicked(self):
+        if self.timer.state == TimerState.BREAK:
+            self.timer.next_state()
+            self.timer.start()
+
+    def update_loop(self):
+        old_state = self.timer.state
+        self.timer.tick()
+        new_state = self.timer.state
+        
+        # Update timer display
+        minutes = self.timer.remaining // 60
+        seconds = self.timer.remaining % 60
+        self.timer_label.configure(text=f"{minutes:02d}:{seconds:02d}")
+        
+        if old_state != new_state:
+            if new_state == TimerState.BREAK:
+                self.set_break_mode()
+                self.activity_label.configure(text="Break Activity")
+            elif new_state == TimerState.WORKING:
+                self.set_widget_mode()
+        
+        self.after(1000, self.update_loop)
 
     def _start_drag(self, event):
         self._drag_x = event.x
@@ -29,6 +65,10 @@ class PomodoroApp(ctk.CTk):
         """Small (200x60), bottom-right corner, 80% alpha, topmost."""
         width = 200
         height = 60
+        
+        # Hide break widgets
+        self.activity_label.pack_forget()
+        self.done_button.pack_forget()
         
         # Get screen dimensions
         screen_width = self.winfo_screenwidth()
@@ -47,6 +87,10 @@ class PomodoroApp(ctk.CTk):
         """Large (400x300), centered, 100% alpha, topmost."""
         width = 400
         height = 300
+        
+        # Show break widgets
+        self.activity_label.pack(pady=10)
+        self.done_button.pack(pady=10)
         
         # Get screen dimensions
         screen_width = self.winfo_screenwidth()
