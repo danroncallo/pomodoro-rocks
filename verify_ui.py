@@ -7,11 +7,13 @@ sys.path.append(os.path.dirname(os.path.abspath(__file__)))
 
 from ui.app import PomodoroApp
 from ui.tray import PomodoroTray
+from core.timer import PomodoroTimer
 
 def main():
     print("Starting Pomodoro Rocks UI Verification...")
     
-    app = PomodoroApp()
+    timer = PomodoroTimer()
+    app = PomodoroApp(timer)
     
     def on_open_chat():
         print("Tray: Abrir Chat clicked")

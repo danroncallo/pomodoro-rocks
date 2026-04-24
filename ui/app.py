@@ -12,8 +12,12 @@ class PomodoroApp(ctk.CTk):
         self.attributes("-topmost", True)
         
         # Widgets
-        self.timer_label = ctk.CTkLabel(self, text="00:00", font=("Arial", 24))
-        self.timer_label.pack(pady=10)
+        self.timer_label = ctk.CTkLabel(self, text="00:00", font=("Arial", 24), cursor="hand2")
+        self.timer_label.pack(pady=(10, 0))
+        self.timer_label.bind("<Button-1>", self._on_timer_clicked)
+        
+        self.instruction_label = ctk.CTkLabel(self, text="Click to Start", font=("Arial", 10))
+        self.instruction_label.pack(pady=(0, 5))
         
         self.activity_label = ctk.CTkLabel(self, text="", font=("Arial", 16))
         self.done_button = ctk.CTkButton(self, text="Hecho", command=self._on_done_clicked)
@@ -25,6 +29,9 @@ class PomodoroApp(ctk.CTk):
         self.bind("<Button-1>", self._start_drag)
         self.bind("<B1-Motion>", self._do_drag)
         
+        # Initial display update
+        self.update_display()
+        
         # Start update loop
         self.update_loop()
 
@@ -33,6 +40,28 @@ class PomodoroApp(ctk.CTk):
             self.timer.next_state()
             self.timer.start()
             self.set_widget_mode()
+            self.update_display()
+
+    def _on_timer_clicked(self, event):
+        if self.timer.state == TimerState.IDLE:
+            self.timer.start()
+            self.update_display()
+
+    def update_display(self):
+        remaining = self.timer.remaining
+        if self.timer.state == TimerState.IDLE and remaining == 0:
+            remaining = self.timer.work_duration
+            
+        minutes = remaining // 60
+        seconds = remaining % 60
+        self.timer_label.configure(text=f"{minutes:02d}:{seconds:02d}")
+        
+        if self.timer.state == TimerState.IDLE:
+            if not self.instruction_label.winfo_manager():
+                self.instruction_label.pack(pady=(0, 5))
+        else:
+            if self.instruction_label.winfo_manager():
+                self.instruction_label.pack_forget()
 
     def update_loop(self):
         old_state = self.timer.state
@@ -40,9 +69,7 @@ class PomodoroApp(ctk.CTk):
         new_state = self.timer.state
         
         # Update timer display
-        minutes = self.timer.remaining // 60
-        seconds = self.timer.remaining % 60
-        self.timer_label.configure(text=f"{minutes:02d}:{seconds:02d}")
+        self.update_display()
         
         if old_state != new_state:
             if new_state == TimerState.BREAK:
