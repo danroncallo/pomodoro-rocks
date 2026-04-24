@@ -38,3 +38,20 @@ def test_tick_in_idle_does_nothing():
     timer.tick(10)
     assert timer.state == TimerState.IDLE
     assert timer.remaining == 0
+
+
+def test_timer_overshoot():
+    timer = PomodoroTimer(work_duration=10, break_duration=5)
+    timer.start()
+    # 10s remaining in WORKING. tick(12) should transition to BREAK and have 5 - (12-10) = 3s remaining.
+    timer.tick(12)
+    assert timer.state == TimerState.BREAK
+    assert timer.remaining == 3
+
+
+def test_tick_invalid_input():
+    timer = PomodoroTimer()
+    with pytest.raises(ValueError, match="Seconds must be a positive number"):
+        timer.tick(0)
+    with pytest.raises(ValueError, match="Seconds must be a positive number"):
+        timer.tick(-1)

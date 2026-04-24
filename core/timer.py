@@ -20,13 +20,19 @@ class PomodoroTimer:
             self.remaining = self.work_duration
 
     def tick(self, seconds=1):
+        if seconds <= 0:
+            raise ValueError("Seconds must be a positive number")
+
         if self.state == TimerState.IDLE:
             return
 
-        self.remaining -= seconds
-        if self.remaining <= 0:
-            self.remaining = 0
+        if seconds >= self.remaining:
+            overflow = seconds - self.remaining
             self.next_state()
+            if self.state != TimerState.IDLE:
+                self.remaining -= overflow
+        else:
+            self.remaining -= seconds
 
     def next_state(self):
         if self.state == TimerState.WORKING:
