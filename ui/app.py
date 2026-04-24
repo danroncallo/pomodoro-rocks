@@ -32,6 +32,7 @@ class PomodoroApp(ctk.CTk):
         if self.timer.state == TimerState.BREAK:
             self.timer.next_state()
             self.timer.start()
+            self.set_widget_mode()
 
     def update_loop(self):
         old_state = self.timer.state
@@ -47,7 +48,7 @@ class PomodoroApp(ctk.CTk):
             if new_state == TimerState.BREAK:
                 self.set_break_mode()
                 self.activity_label.configure(text="Break Activity")
-            elif new_state == TimerState.WORKING:
+            elif new_state in [TimerState.WORKING, TimerState.IDLE]:
                 self.set_widget_mode()
         
         self.after(1000, self.update_loop)

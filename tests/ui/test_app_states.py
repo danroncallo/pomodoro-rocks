@@ -64,3 +64,47 @@ def test_transition_to_working_mode(mock_timer):
     # Check geometry for widget mode (200x60)
     assert "200x60" in app.geometry()
     app.destroy()
+
+def test_transition_to_idle_mode(mock_timer):
+    # Start in BREAK state
+    mock_timer.state = TimerState.BREAK
+    mock_timer.remaining = 300
+    app = PomodoroApp(mock_timer)
+    app.set_break_mode()
+    app.update()
+    
+    assert "400x300" in app.geometry()
+    
+    # Mock tick to transition to IDLE
+    def side_effect():
+        mock_timer.state = TimerState.IDLE
+        mock_timer.remaining = 0
+    
+    mock_timer.tick.side_effect = side_effect
+    
+    app.update_loop()
+    app.update()
+    
+    # Check geometry for widget mode (200x60)
+    assert "200x60" in app.geometry()
+    app.destroy()
+
+def test_done_button_click_instant_feedback(mock_timer):
+    # Start in BREAK state
+    mock_timer.state = TimerState.BREAK
+    mock_timer.remaining = 300
+    app = PomodoroApp(mock_timer)
+    app.set_break_mode()
+    app.update()
+    
+    assert "400x300" in app.geometry()
+    
+    # Simulate clicking the button
+    app.done_button.invoke()
+    app.update()
+    
+    # Check that it immediately switched to widget mode
+    assert "200x60" in app.geometry()
+    mock_timer.next_state.assert_called_once()
+    mock_timer.start.assert_called_once()
+    app.destroy()
