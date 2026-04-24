@@ -15,14 +15,15 @@ def main():
     
     def on_open_chat():
         print("Tray: Abrir Chat clicked")
-        app.set_break_mode()
-        app.deiconify()
-        app.focus_force()
+        app.after(0, lambda: (
+            app.set_break_mode(),
+            app.deiconify(),
+            app.focus_force()
+        ))
 
     def on_exit():
         print("Tray: Salir clicked")
-        app.quit()
-        sys.exit(0)
+        app.after(0, app.quit)
 
     tray = PomodoroTray(on_open_chat=on_open_chat, on_exit=on_exit)
     tray.run()

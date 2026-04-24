@@ -28,9 +28,9 @@ class PomodoroTray:
             self.on_open_chat()
 
     def _handle_exit(self, icon, item):
+        self.icon.stop()
         if self.on_exit:
             self.on_exit()
-        self.icon.stop()
 
     def run(self):
         """Runs the tray icon in a detached thread."""
