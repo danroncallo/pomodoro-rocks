@@ -35,5 +35,12 @@ class ActivityMonitor:
             self.keyboard_listener.stop()
             self.keyboard_listener = None
 
+    def __enter__(self):
+        self.start()
+        return self
+
+    def __exit__(self, exc_type, exc_val, exc_tb):
+        self.stop()
+
     def get_idle_time(self) -> float:
         return time.time() - self.last_activity
